@@ -34,15 +34,30 @@ Claude Code と Gemini CLI の自律連携システムによる AI ペアプロ�
   - プロジェクトの目的・要件・最終ゴールを定義
   - AI連携結果の最終承認・方針決定
 
-## 自律連携実装フロー
+## 統一実装ワークフロー（完全版）
 
-### Phase 1: Claude分析・計画立案
-1. Issue分析・タスク計画（Claude担当）
-2. 技術要件定義・リスク評価  
-3. 詳細実装指示の作成（JSON形式）
+### 🚀 ワンコマンド実装フロー
+「○○を実装したい」という簡単な要求から、Geminiで実行できる詳細な実装指示まで一貫生成：
+
+```bash
+# Step 1: 統一ワークフロー実行（Claude分析→詳細実装指示生成）
+./ai_workspace/scripts/unified_workflow.sh 'イベント管理機能'
+
+# Step 2: 生成された実装指示でGemini実行
+gemini -p "$(cat ai_workspace/outputs/claude_generated_issue.md)"
+
+# Step 3: 品質検証（Claude検証ループ）
+./ai_workspace/scripts/ai_pair_flow.sh 'イベント管理機能'
+```
+
+### Phase 1: Claude分析・実装指示生成
+1. **要求分析**: 簡単な機能名から詳細要件を推定
+2. **テンプレート選択**: 機能種別に応じた最適なテンプレート適用
+3. **詳細実装指示生成**: Gemini用の完全な実装指示文書作成
+4. **品質チェック**: 生成された指示の完成度検証
 
 ### Phase 2: Gemini大規模実装
-1. Claudeの計画に基づく実装（Gemini担当）
+1. Claudeの詳細指示に基づく実装（Gemini担当）
 2. ファイル作成・修正・テストコード生成
 3. Rails規約準拠・セキュリティ考慮
 
@@ -51,24 +66,31 @@ Claude Code と Gemini CLI の自律連携システムによる AI ペアプロ�
 2. 改善指摘・統合作業
 3. LGTM判定まで改善ループ継続
 
-## 連携コマンド例
+## 統一ワークフロー活用例
 
-### Claude → Gemini（実装指示）
+### 🎯 対応する機能タイプと自動選択テンプレート
+統一ワークフローは、要求内容を自動分析して最適なテンプレートを選択します：
+
+| 要求キーワード | 選択テンプレート | 生成される実装指示 |
+|---------------|-----------------|-------------------|
+| `イベント管理` | event_management | イベント・参加申し込み機能の詳細実装 |
+| `ユーザープロフィール` | user_management | プロフィール・検索・権限管理 |
+| `お問い合わせフォーム` | form_feature | フォーム・メール・スパム対策 |
+| `一覧表示` | listing_feature | 検索・ソート・ページネーション |
+| `認証機能` | authentication | 2FA・ソーシャルログイン・セキュリティ |
+| その他 | basic_feature | 汎用的なCRUD機能実装 |
+
+### 🚀 完全自動化実行例
 ```bash
-gemini -p "BattleOfRunteqプロジェクトで以下の計画で実装してください:
+# 従来の方式（手動で指示作成）
+gemini -p "BattleOfRunteqプロジェクトでイベント管理機能を実装してください..."
 
-タスク: [具体的なタスク説明]
-実装手順:
-1. [詳細ステップ1]
-2. [詳細ステップ2]
+# 統一ワークフロー（自動生成）
+./ai_workspace/scripts/unified_workflow.sh 'イベント管理機能'
+# → 詳細な50行以上の実装指示が自動生成される
 
-技術要件:
-- Rails 8 + PostgreSQL + Bootstrap対応
-- RSpec テスト実装必須
-- セキュリティ考慮
-
-対象ファイル: [作成・修正ファイルリスト]
-"
+# 生成された指示でGemini実行
+gemini -p "$(cat ai_workspace/outputs/claude_generated_issue.md)"
 ```
 
 ### Gemini → Claude（実装完了報告）

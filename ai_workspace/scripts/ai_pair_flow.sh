@@ -9,13 +9,29 @@ if [ -z "$TASK_DESCRIPTION" ]; then
     echo "使用法: ./scripts/ai_pair_flow.sh '実装したい機能説明'"
     echo ""
     echo "例: ./scripts/ai_pair_flow.sh '会社情報を表示するAboutページ機能'"
+    echo ""
+    echo "💡 統一ワークフローを使用する場合:"
+    echo "   ./ai_workspace/scripts/unified_workflow.sh '実装したい機能'"
+    echo "   （このスクリプトは、Gemini実行後の品質検証フェーズで使用）"
     exit 1
 fi
 
-echo "=== AI自律連携開始 ==="
+echo "=== AI自律連携開始（品質検証フェーズ） ==="
 echo "タスク: $TASK_DESCRIPTION"
 echo "最大改善回数: $MAX_ITERATIONS"
 echo ""
+
+# 統一ワークフローで生成された実装指示ファイルの確認
+GENERATED_ISSUE_FILE="ai_workspace/outputs/claude_generated_issue.md"
+if [ -f "$GENERATED_ISSUE_FILE" ]; then
+    echo "📄 統一ワークフロー生成ファイル検出: $GENERATED_ISSUE_FILE"
+    echo "✅ このスクリプトは、Gemini実装後の品質検証として実行します"
+    echo ""
+else
+    echo "ℹ️  統一ワークフローからの実行ではない可能性があります"
+    echo "💡 新規実装の場合は ./ai_workspace/scripts/unified_workflow.sh の使用を推奨"
+    echo ""
+fi
 
 # jqコマンドの存在確認
 if ! command -v jq &> /dev/null; then
@@ -214,3 +230,8 @@ echo "cat ai_workspace/outputs/gemini_implementation.txt"
 echo ""
 echo "📊 詳細評価確認:"
 echo "cat ai_workspace/outputs/claude_review_*.json"
+echo ""
+echo "🔄 完整的な統一ワークフロー（次回実装時）:"
+echo "   1. ./ai_workspace/scripts/unified_workflow.sh '新機能名'"
+echo "   2. gemini -p \"\$(cat ai_workspace/outputs/claude_generated_issue.md)\""
+echo "   3. ./ai_workspace/scripts/ai_pair_flow.sh '新機能名' （品質検証）"
