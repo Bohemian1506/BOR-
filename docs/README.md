@@ -53,27 +53,39 @@ CLAUDE.mdで詳細設計された連携システム：
 # ローカルでClaude Codeを起動
 claude_code
 
-# 要件分析・実装計画立案
-# → Gemini向けの詳細実装指示を作成
+# 要件分析・実装計画立案 + Gemini用Issue作成指示
+「イベント参加申し込み機能を実装したい。Gemini用のIssue文書も作成してください。」
+
+# → 詳細分析結果 + Gemini向けの実装指示Issue文書を生成
+# → claude_generated_issue.md として保存することを推奨
 ```
 
 #### Phase 2: 実装 (Gemini CLI)
 ```bash
-# Gemini CLIで実装実行
+# Claude生成のIssue文書をGeminiに投入
+# オプション1: ファイルから読み込み
+gemini -p "$(cat claude_generated_issue.md)"
+
+# オプション2: 直接コピペ
 gemini -p "BattleOfRunteqプロジェクトで以下の計画で実装してください:
 
-タスク: [具体的なタスク説明]
-実装手順:
-1. [詳細ステップ1]
-2. [詳細ステップ2]
+[Claude生成のIssue文書内容をここにペースト]
 
-技術要件:
+例：
+🚀 イベント参加申し込み機能実装依頼
+
+📋 実装手順:
+1. Eventモデル作成（name, description, start_time, location, capacity）
+2. Registrationモデル作成（Event-User中間テーブル、status管理）
+3. EventsController・RegistrationsController実装
+4. Bootstrap 5.2対応ビュー作成
+5. RSpecテスト実装
+
+🔧 技術要件:
 - Rails 8 + PostgreSQL + Bootstrap対応
-- RSpec テスト実装必須
-- セキュリティ考慮
 - 初学者理解しやすい日本語コメント
-
-対象ファイル: [作成・修正ファイルリスト]"
+- Strong Parameters使用
+- セキュリティ考慮"
 ```
 
 #### Phase 3: 検証・統合 (Claude Code)
@@ -172,6 +184,97 @@ gemini -p "Rails 8でイベント管理機能を実装したい。最適なア�
 # コードレビュー依頼
 gemini -p "以下のRailsコードをレビューしてください: [コード内容]"
 ```
+
+### 📄 Gemini用Issue文書の具体例
+
+Claude Codeが生成するGemini向け実装指示文書の詳細例：
+
+```markdown
+# 🚀 イベント参加申し込み機能実装依頼
+
+## 🎯 実装タスク
+BattleOfRunteqプロジェクトでイベント参加申し込み機能を実装してください。
+
+## 📋 詳細実装手順
+
+### 1. Eventモデル作成
+- **ファイル**: `app/models/event.rb`
+- **フィールド**: 
+  - name:string (イベント名、必須)
+  - description:text (説明文)
+  - start_time:datetime (開始日時、必須)
+  - end_time:datetime (終了日時)
+  - location:string (開催場所)
+  - capacity:integer (定員、正の整数)
+  - user:references (主催者、Userモデルとの関連)
+- **バリデーション**: name必須、start_time必須、capacity正の整数
+
+### 2. Registrationモデル作成
+- **ファイル**: `app/models/registration.rb`
+- **概要**: Event-User間の中間テーブル
+- **フィールド**:
+  - event:references (参加するイベント)
+  - user:references (参加者)
+  - status:string (申し込み状況: 'pending', 'confirmed', 'cancelled')
+  - message:text (申し込み時のメッセージ)
+  - created_at:datetime (申し込み日時)
+- **バリデーション**: 同一イベントへの重複申し込み防止
+
+### 3. コントローラー実装
+- **EventsController**: index, show, new, create, edit, update, destroy
+- **RegistrationsController**: create, destroy (申し込み・キャンセル)
+
+### 4. ビュー作成
+- Bootstrap 5.2対応のレスポンシブデザイン
+- イベント一覧・詳細・作成・編集ページ
+- 参加申し込みボタン・フォーム
+
+### 5. ルーティング設定
+- RESTfulなネストしたルーティング
+- events/:id/registrations の設計
+
+## 🔧 技術要件
+- **Rails 8 + PostgreSQL + Bootstrap 5.2対応**
+- **MVCパターン準拠、初学者理解しやすい実装**
+- **日本語コメント必須**
+- **Strong Parameters使用**
+- **RSpec テスト実装必須**
+- **Devise認証との連携**
+- **セキュリティ考慮（CSRF、SQLインジェクション対策）**
+
+## 📁 対象ファイル
+- app/models/event.rb
+- app/models/registration.rb
+- app/models/user.rb (関連付け追加)
+- app/controllers/events_controller.rb
+- app/controllers/registrations_controller.rb
+- app/views/events/
+- config/routes.rb
+- spec/models/
+- spec/requests/
+- db/migrate/
+
+## ✅ 完了基準
+- [ ] すべてのRSpecテストがパス
+- [ ] Bootstrap UIが正常表示
+- [ ] セキュリティチェック完了
+- [ ] 初学者向けコメント完備
+- [ ] Rails規約準拠確認
+```
+
+### 💡 ワークフロー効率化のメリット
+
+**従来の方式**:
+1. Claude分析 → あなたが手動でGemini指示作成 → Gemini実装
+
+**改善後の方式**:
+1. Claude分析+Issue文書生成 → ファイル/コピペでGemini実行
+
+**効果**:
+- ⏱️ **時短**: 手動での指示作成が不要
+- 🎯 **精度向上**: Claude分析との一貫性保証
+- 📚 **学習効果**: 詳細な実装手順で理解促進
+- 🔄 **再利用性**: Issue文書は将来の参考資料
 
 ## 📞 サポート・質問
 
