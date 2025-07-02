@@ -178,4 +178,16 @@ echo ""
 echo "💡 ワンライナー実行（全自動）:"
 echo "   $GEMINI_COMMAND_FILE && ./ai_workspace/scripts/ai_pair_flow.sh '$SIMPLE_REQUEST'"
 echo ""
+echo "🔗 PR自動作成（品質検証後）:"
+echo "   ./ai_workspace/scripts/ai_pair_flow.sh '$SIMPLE_REQUEST' --create-pr"
+echo ""
 echo "📖 詳細な手順は docs/README.md または CLAUDE.md を参照してください"
+
+# オプション解析（PR作成フラグ）
+CREATE_PR=false
+if [ "$2" = "--create-pr" ] || [ "$2" = "-p" ]; then
+    CREATE_PR=true
+    echo ""
+    echo "🔗 PR作成オプションが有効です"
+    echo "   品質検証完了後、自動でPRを作成します"
+fi

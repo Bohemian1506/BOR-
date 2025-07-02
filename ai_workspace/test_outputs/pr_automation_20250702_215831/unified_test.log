@@ -1,0 +1,50 @@
+🚀 統一実装ワークフロー開始
+📋 要求: テストイベント機能
+==================================
+
+--- Phase 1: 要求分析・テンプレート選択 ---
+🎯 検出パターン: イベント管理系機能
+📄 使用テンプレート: event_management
+
+--- Phase 2: 詳細実装指示生成 ---
+📖 テンプレート読み込み: ai_workspace/templates/event_management.md
+✅ 実装指示生成完了: ai_workspace/outputs/claude_generated_issue.md
+
+--- Phase 3: 生成内容の品質チェック ---
+📊 生成された実装指示の概要:
+   - ファイルサイズ: 7486 bytes
+   - 行数: 187 lines
+✅ ファイルサイズは適切です
+✅ 必須セクション全て含まれています
+
+--- Phase 4: Gemini実行コマンド生成 ---
+✅ Gemini実行コマンド生成完了: ai_workspace/outputs/gemini_execution_command.sh
+
+🎉 統一実装ワークフロー完了
+==================================
+
+📄 生成されたファイル:
+   1. 詳細実装指示: ai_workspace/outputs/claude_generated_issue.md
+   2. Gemini実行コマンド: ai_workspace/outputs/gemini_execution_command.sh
+
+🚀 次のアクション（推奨手順）:
+
+   # Step 1: 生成された実装指示を確認
+   cat ai_workspace/outputs/claude_generated_issue.md
+
+   # Step 2: Gemini CLIで実装実行
+   ai_workspace/outputs/gemini_execution_command.sh
+   # または直接実行:
+   gemini -p "$(cat ai_workspace/outputs/claude_generated_issue.md)"
+
+   # Step 3: 実装結果をClaude Codeで品質検証
+   # （Gemini実行後、このスクリプトの親ディレクトリで）
+   ./ai_workspace/scripts/ai_pair_flow.sh 'テストイベント機能'
+
+💡 ワンライナー実行（全自動）:
+   ai_workspace/outputs/gemini_execution_command.sh && ./ai_workspace/scripts/ai_pair_flow.sh 'テストイベント機能'
+
+🔗 PR自動作成（品質検証後）:
+   ./ai_workspace/scripts/ai_pair_flow.sh 'テストイベント機能' --create-pr
+
+📖 詳細な手順は docs/README.md または CLAUDE.md を参照してください
