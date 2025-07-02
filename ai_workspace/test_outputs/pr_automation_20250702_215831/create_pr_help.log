@@ -1,0 +1,10 @@
+使用法: ./ai_workspace/scripts/create_pr.sh '機能名' [ベースブランチ]
+
+例:
+  ./ai_workspace/scripts/create_pr.sh 'イベント管理機能'
+  ./ai_workspace/scripts/create_pr.sh 'ユーザー認証' 'develop'
+
+💡 統一ワークフローとの連携:
+   1. ./ai_workspace/scripts/unified_workflow.sh '機能名'
+   2. gemini -p "$(cat ai_workspace/outputs/claude_generated_issue.md)"
+   3. ./ai_workspace/scripts/ai_pair_flow.sh '機能名' --create-pr

@@ -2,18 +2,30 @@
 
 # AI自律連携メインスクリプト
 TASK_DESCRIPTION="$1"
+CREATE_PR_FLAG="$2"
 MAX_ITERATIONS=3
 CURRENT_ITERATION=0
 
 if [ -z "$TASK_DESCRIPTION" ]; then
-    echo "使用法: ./scripts/ai_pair_flow.sh '実装したい機能説明'"
+    echo "使用法: ./scripts/ai_pair_flow.sh '実装したい機能説明' [--create-pr]"
     echo ""
     echo "例: ./scripts/ai_pair_flow.sh '会社情報を表示するAboutページ機能'"
+    echo "    ./scripts/ai_pair_flow.sh 'イベント管理機能' --create-pr"
     echo ""
     echo "💡 統一ワークフローを使用する場合:"
     echo "   ./ai_workspace/scripts/unified_workflow.sh '実装したい機能'"
     echo "   （このスクリプトは、Gemini実行後の品質検証フェーズで使用）"
+    echo ""
+    echo "🔗 PR自動作成オプション:"
+    echo "   --create-pr: 品質検証完了後、自動でPRを作成"
     exit 1
+fi
+
+# PR作成フラグ確認
+CREATE_PR=false
+if [ "$CREATE_PR_FLAG" = "--create-pr" ] || [ "$CREATE_PR_FLAG" = "-p" ]; then
+    CREATE_PR=true
+    echo "🔗 PR自動作成が有効です"
 fi
 
 echo "=== AI自律連携開始（品質検証フェーズ） ==="
@@ -219,8 +231,26 @@ if [ -f ai_workspace/outputs/claude_review_$((CURRENT_ITERATION)).json ]; then
     
     if [ "$FINAL_STATUS" = "LGTM" ]; then
         echo "🎉 実装完了！高品質な実装が完成しました。"
+        
+        # PR自動作成実行
+        if [ "$CREATE_PR" = true ]; then
+            echo ""
+            echo "--- PR自動作成実行 ---"
+            if [ -x "ai_workspace/scripts/create_pr.sh" ]; then
+                echo "🚀 PR作成中..."
+                ./ai_workspace/scripts/create_pr.sh "$TASK_DESCRIPTION"
+                echo "✅ PR作成完了"
+            else
+                echo "❌ PR作成スクリプトが見つかりません: ai_workspace/scripts/create_pr.sh"
+                echo "💡 手動でPRを作成してください"
+            fi
+        fi
     else
         echo "⚠️  実装完了（要改善項目あり）"
+        if [ "$CREATE_PR" = true ]; then
+            echo "🔗 品質が基準を満たしていないため、PR作成をスキップします"
+            echo "💡 改善後に再度実行してください"
+        fi
     fi
 fi
 
@@ -231,7 +261,14 @@ echo ""
 echo "📊 詳細評価確認:"
 echo "cat ai_workspace/outputs/claude_review_*.json"
 echo ""
+
+if [ "$CREATE_PR" = false ]; then
+    echo "🔗 PR作成（手動実行）:"
+    echo "./ai_workspace/scripts/create_pr.sh '$TASK_DESCRIPTION'"
+    echo ""
+fi
+
 echo "🔄 完整的な統一ワークフロー（次回実装時）:"
 echo "   1. ./ai_workspace/scripts/unified_workflow.sh '新機能名'"
 echo "   2. gemini -p \"\$(cat ai_workspace/outputs/claude_generated_issue.md)\""
-echo "   3. ./ai_workspace/scripts/ai_pair_flow.sh '新機能名' （品質検証）"
+echo "   3. ./ai_workspace/scripts/ai_pair_flow.sh '新機能名' --create-pr （品質検証+PR作成）"
